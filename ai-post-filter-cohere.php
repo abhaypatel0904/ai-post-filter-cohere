@@ -2,7 +2,7 @@
 /**
  * Plugin Name: AI Post Filter with Cohere
  * Description: Use natural language prompts to filter posts of any post type via AI.
- * Version: 1.0.0
+ * Version: 1.1.0
  * Author: Abhay Patel
  * Author URI: https://github.com/abhaypatel0904
  * Text Domain: ai-post-filter-cohere
@@ -26,16 +26,19 @@ add_action( 'restrict_manage_posts', 'aipf_add_ai_prompt_search_field' );
 
 if ( ! function_exists( 'aipf_add_ai_prompt_search_field' ) ) {
 	/**
-	 * Adds the AI prompt input field to the admin product list screen.
+	 * Adds the AI prompt input field to the admin post type list screen.
 	 */
 	function aipf_add_ai_prompt_search_field() {
 		global $typenow;
 		$ai_prompt = isset( $_GET['ai_prompt'] ) ? sanitize_text_field( wp_unslash( $_GET['ai_prompt'] ) ) : ''; //phpcs:ignore WordPress.Security.NonceVerification.Recommended
-		$label     = sprintf(// translators: %s: The current post type name (e.g., Product).
+		$label     = sprintf(// translators: %s: The current post type name.
 			_x( 'Ask AI to filter %ss...', 'admin placeholder text', 'ai-post-filter-cohere' ),
 			ucwords( str_replace( '-', ' ', strtolower( $typenow ) ) )
 		);
-		echo '<input type="text" name="ai_prompt" value="' . esc_attr( $ai_prompt ) . '" placeholder="' . esc_attr( $label ) . '" style="width:300px; margin-right: 10px;" />';
+		// AI search field HTML.
+		echo '<input type="text" id="ai_prompt" name="ai_prompt" value="' . esc_attr( $ai_prompt ) . '" placeholder="' . esc_attr( $label ) . '" style="width:300px; margin-right: 10px;" />';
+		// Voice Button HTML.
+		echo '<button style="margin-right: 10px;" type="button" id="ai_voice_btn" class="button" title="' . esc_attr__( 'Speak your prompt', 'ask-ai-assistant' ) . '">🎤</button>';
 		wp_nonce_field( 'aipf_prompt_filter_action', 'aipf_prompt_filter_nonce', false );
 	}
 }
@@ -43,7 +46,7 @@ add_action( 'pre_get_posts', 'aipf_intercept_ai_prompt_request' );
 
 if ( ! function_exists( 'aipf_intercept_ai_prompt_request' ) ) {
 	/**
-	 * Modify the admin product query based on AI prompt
+	 * Modify the admin post type filter query based on AI prompt
 	 *
 	 * @param WP_Query $query The current query object.
 	 */
@@ -79,7 +82,10 @@ if ( ! function_exists( 'aipf_intercept_ai_prompt_request' ) ) {
 			'tax_query',
 			'meta_key',
 			'meta_value',
+			'post_content',
 			'product_cat',
+			'date_query',
+			'compare',
 		);
 
 		foreach ( $args as $key => $value ) {
@@ -112,8 +118,6 @@ if ( ! function_exists( 'aipf_call_cohere_api' ) ) {
 	/**
 	 * Call the Cohere Chat API and return the decoded response.
 	 *
-	 * @since 1.0.0
-	 *
 	 * @param string $prompt Optional. Natural‑language prompt. Default empty string.
 	 * @return array Associative array containing the API response or an `error` key.
 	 */
@@ -128,14 +132,135 @@ if ( ! function_exists( 'aipf_call_cohere_api' ) ) {
 			add_action( 'admin_notices', 'aipf_show_missing_api_key_notice' );
 			return;
 		}
+		$system_message = 'You are a helpful assistant that always generates valid WordPress WP_Query arguments as JSON objects, based on user instructions.
+
+			Rules to follow strictly:
+				- The response must be in valid JSON only, not PHP.
+				- Use double quotes for all keys and string values.
+				- Do not include explanations, just return the JSON object.
+
+			1. Always include: 
+				"post_type": "' . $typenow . '"
+
+			2. For post metadata (e.g., _price, _stock_status, rating), use this format:
+				"meta_query": [
+					{
+					"key": "_price",
+					"value": "100",
+					"compare": ">=",
+					"type": "NUMERIC"
+					}
+				]
+				Example Prompt: Show "' . $typenow . '" where price is not set(or other such type of prompts)
+				{
+					"post_type": ""' . $typenow . '"",
+					"meta_query": [
+						{
+						"key": "_price",
+						"compare": "NOT EXISTS"
+						}
+					]
+				}
+
+
+			3. For taxonomy filters (e.g., "' . $typenow . '" categories or tags):
+				"tax_query": [
+					{
+					"taxonomy": "product_cat",
+					"field": "slug",
+					"terms": ["books"]
+					}
+				]
+
+			4. For core post fields:
+				- If user refers to "description" or "short description", do not use "meta_query". Instead, use:
+				"post_content": "search terms"
+
+				This searches across "post_title", "post_content", and "post_excerpt".
+
+				- Other mappings:
+				- "slug" or "post_name" → "name"
+				- "post_status"
+				- "post_content" -> for descriptions
+				- "post_excerpt" -> for short descriptions
+				- "author" → "post_author"
+				- "orderby" / "order"
+				- "IDs" → "post__in", "post__not_in"
+				Examples For core post fields (learn format strictly):
+					Prompt: Get all "' . $typenow . '" that do not have a description(or other such type of prompts)
+					{
+						"post_type": ""' . $typenow . '"",
+						"s": ""
+					}
+					Prompt: Show "' . $typenow . '" with no short description(or other such type of prompts)
+					{
+						"post_type": ""' . $typenow . '"",
+						"post_content": "",
+						"compare": "="
+					}
+					Prompt: Get all "' . $typenow . '" with description equal to "eco-friendly"(or other such type of prompts)
+					{
+					"post_type": ""' . $typenow . '"",
+					"s": "eco-friendly"
+					}
+
+
+			5. For date filters:
+				Example 1: ' . $typenow . ' published in the last 7 days
+				"date_query": [
+					{
+						"after": "1 week ago",
+					}
+				]
+				Example 2: ' . $typenow . ' published between January 1 and May 31, 2024
+				{
+					"date_query": [
+						{
+							"after": "January 1st, 2024",
+							"before": "May 31st, 2024",
+							"inclusive": true
+						}
+					]
+				}
+				Example 2: To get ' . $typenow . ' after 1st January 2014, and before 1st March 2014 your date query would be:
+				{
+					"date_query": [
+						{
+						"year": 2014,
+						"day": 1,
+						"month": [1, 6],
+						"compare": "BETWEEN"
+						}
+					]
+				}
+
+			Respond only with a valid JSON object. Example format:
+
+			{
+			"post_type": ""' . $typenow . '"",
+			"meta_query": [
+				{
+					"key": "_price",
+					"value": "100",
+					"compare": ">="
+				}
+			],
+			"tax_query": [
+				{
+					"taxonomy": "product_cat",
+					"field": "slug",
+					"terms": ["books"]
+				}
+			]
+			}';
 
 		$body = array(
 			'model'           => 'command-a-03-2025',
-			'temperature'     => 0.3,
+			'temperature'     => 0.8,
 			'messages'        => array(
 				array(
 					'role'    => 'system',
-					'content' => 'You are an assistant that always returns wp query params using post type as  ' . $typenow . ' and its meta data, or texonomy query(if asked in prompt for category tags etc.) or post table fields( if asked about only the post titile,slug, guid, name, date, then make the post table query )',
+					'content' => $system_message,
 				),
 				array(
 					'role'    => 'user',
@@ -144,6 +269,15 @@ if ( ! function_exists( 'aipf_call_cohere_api' ) ) {
 			),
 			'response_format' => array( 'type' => 'json_object' ),
 		);
+
+		/**
+		 * Filter the Cohere API request body before sending.
+		 *
+		 * @param array  $body   The request body array.
+		 * @param string $prompt The user prompt.
+		 * @param string $typenow The current post type.
+		 */
+		$body = apply_filters( 'aipf_cohere_api_body', $body, $prompt, $typenow );
 
 		$response = wp_remote_post(
 			'https://api.cohere.com/v2/chat',
@@ -307,3 +441,25 @@ if ( ! function_exists( 'aipf_add_settings_link' ) ) {
 }
 
 add_filter( 'plugin_action_links_' . plugin_basename( __FILE__ ), 'aipf_add_settings_link' );
+
+add_action( 'admin_enqueue_scripts', 'aipf_enqueue_voice_script' );
+if ( ! function_exists( 'aipf_enqueue_voice_script' ) ) {
+	/**
+	 * Enqueue the JS for the admin list screen.
+	 *
+	 * @param string $hook_suffix The current admin page.
+	 */
+	function aipf_enqueue_voice_script( $hook_suffix = '' ) {
+		$screen = get_current_screen();
+		if ( empty( $hook_suffix ) || empty( $screen ) || empty( $screen->post_type ) || ( 'edit' !== $screen->base ) ) {
+			return;
+		}
+		wp_enqueue_script(
+			'aipf-script',
+			plugins_url( 'assets/js/script.js', __FILE__ ),
+			array(),
+			'1.1.0',
+			true
+		);
+	}
+}

@@ -4,7 +4,7 @@ Tags: Ask AI, AI search, woocommerce AI Assistant, AI Assistant, WooCommerce pro
 Requires at least: 5.0
 Tested up to: 6.8
 Requires PHP: 7.0
-Stable tag: 1.0.0
+Stable tag: 1.1.0
 License: GNU General Public License v3.0
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
@@ -60,6 +60,12 @@ This API connection is essential for the plugin's AI features to function. If yo
 == Screenshots ==
 
 == Changelog ==
+
+= 1.1.0 (28.06.2025) =
+* New: WooCommerce 9.9.5 compatible
+* New: Voice search support to capture prompts using speech for searching WooCommerce products or any post type
+* Update: Improved accuracy of AI-generated reponse related to date filters, metadata, and taxonomy-based prompts
+* Update: POT file
 
 = 1.0.0 (15.06.2025) =
 * Initial release
