@@ -1,0 +1,59 @@
+# Copyright (C) 2025 Abhay Patel
+# This file is distributed under the GNU General Public License v3.0.
+msgid ""
+msgstr ""
+"Project-Id-Version: AI Post Filter with Cohere 1.0.0\n"
+"Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/ai-post-filter-cohere\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"POT-Creation-Date: 2025-06-22T14:29:25+00:00\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"X-Generator: WP-CLI 2.10.0\n"
+"X-Domain: ai-post-filter-cohere\n"
+
+#. Plugin Name of the plugin
+msgid "AI Post Filter with Cohere"
+msgstr ""
+
+#. Description of the plugin
+msgid "Use natural language prompts to filter posts of any post type via AI."
+msgstr ""
+
+#. Author of the plugin
+msgid "Abhay Patel"
+msgstr ""
+
+#. Author URI of the plugin
+msgid "https://github.com/abhaypatel0904"
+msgstr ""
+
+#. translators: %s: The current post type name (e.g., Product).
+#: ai-post-filter-cohere.php:35
+msgctxt "admin placeholder text"
+msgid "Ask AI to filter %ss..."
+msgstr ""
+
+#: ai-post-filter-cohere.php:245
+msgid "Cohere API Key"
+msgstr ""
+
+#: ai-post-filter-cohere.php:260
+msgid "Enter your Cohere API key to enable AI-powered commands."
+msgstr ""
+
+#. translators: %s is a link to Cohere API key documentation.
+#: ai-post-filter-cohere.php:265
+msgid "Click<a href=\"%s\" target=\"_blank\"> here </a>to know how to create a Cohere API key"
+msgstr ""
+
+#. translators: %s: Link to general settings
+#: ai-post-filter-cohere.php:286
+msgid "Cohere API key is missing. Please add it from the <a href=\"%s\">General Settings</a>."
+msgstr ""
+
+#: ai-post-filter-cohere.php:303
+msgid "Settings"
+msgstr ""
