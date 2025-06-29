@@ -1,6 +1,6 @@
 === AI Post Filter with Cohere ===
 Contributors: abhaypatel01
-Tags: Ask AI, AI search, woocommerce AI Assistant, AI Assistant, WooCommerce product filter
+Tags: AI search, AI Assistant, WooCommerce product filter
 Requires at least: 5.0
 Tested up to: 6.8
 Requires PHP: 7.0
@@ -26,6 +26,24 @@ Use natural language prompts to filter posts of any post type via AI.
 = Where to add Cohere AI API key =
 
 Go to WordPress admin > Settings > General, and add the API key in the "Cohere API Key" field
+
+== Use Cases ==
+
+Users can enter natural language prompts across any post type — including products, posts, custom content types, and more.
+
+- **Product Specific Filters**:  
+  - Get products published in May and are in stock
+  - Get New arrivals in the Accessories category
+  - Get products on sale in the electronics category
+  - Get products with a sale price less than 30
+
+- **Media-Based Filters**:
+  - Get posts without featured images
+  - Get only products with gallery images
+
+- **Logical Conditions (AND/OR)**:
+  - Get Products in stock and published after Jan 1, 2024
+  - Get products from last 7 days that are out of stock
 
 == External Services ==
 
@@ -58,6 +76,12 @@ This plugin connects to an API provided by Cohere (https://cohere.com) to perfor
 This API connection is essential for the plugin's AI features to function. If you choose not to use the AI filtering functionality, the rest of the plugin remains functional.
 
 == Screenshots ==
+
+1. Voice Search feature.
+
+2. Search with multiple (and/or) conditions
+
+3. Filter posts by it's meta data like. price, stock, sku etc.
 
 == Changelog ==
 
