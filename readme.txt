@@ -37,11 +37,11 @@ Users can enter natural language prompts across any post type — including prod
   - Get products on sale in the electronics category
   - Get products with a sale price less than 30
 
-- **Media-Based Filters**
+- **Media-Based Filters**:
   - Get posts without featured images
   - Get only products with gallery images
 
-- **Logical Conditions (AND/OR)**
+- **Logical Conditions (AND/OR)**:
   - Get Products in stock and published after Jan 1, 2024
   - Get products from last 7 days that are out of stock
 
